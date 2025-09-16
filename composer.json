@@ -1,5 +1,5 @@
 {
-    "name": "durable/laravel-typst",
+    "name": "durableprogramming/durable-laravel-typst",
     "description": "Laravel facade plugin for Typst document compilation",
     "type": "library",
     "license": "MIT",
