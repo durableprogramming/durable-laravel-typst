@@ -26,6 +26,7 @@ class TypstService
         $this->ensureWorkingDirectory();
     }
 
+
     public function compile(string $source, array $options = []): string
     {
         $tempFile = $this->createTempFile($source);
