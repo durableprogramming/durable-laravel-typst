@@ -116,7 +116,7 @@ class TypstService
 
     protected function createTempFile(string $content): string
     {
-        $baseTempFile = tempnam($this->workingDirectory, 'typst_');
+        $baseTempFile = @tempnam($this->workingDirectory, 'typst_');
         $tempFile = $baseTempFile . '.typ';
         
         // Remove the base temp file created by tempnam
