@@ -1,9 +1,9 @@
 <?php
 
-namespace Durable\LaravelTypst;
+namespace Durableprogramming\LaravelTypst;
 
 use Illuminate\Support\Facades\Process;
-use Durable\LaravelTypst\Exceptions\TypstCompilationException;
+use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
 
 class TypstService
 {

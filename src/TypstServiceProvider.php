@@ -1,6 +1,6 @@
 <?php
 
-namespace Durable\LaravelTypst;
+namespace Durableprogramming\LaravelTypst;
 
 use Illuminate\Support\ServiceProvider;
 

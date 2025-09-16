@@ -1,6 +1,6 @@
 <?php
 
-namespace Durable\LaravelTypst\Facades;
+namespace Durableprogramming\LaravelTypst\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

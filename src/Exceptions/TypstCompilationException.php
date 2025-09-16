@@ -1,6 +1,6 @@
 <?php
 
-namespace Durable\LaravelTypst\Exceptions;
+namespace Durableprogramming\LaravelTypst\Exceptions;
 
 use Exception;
 

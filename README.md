@@ -4,10 +4,23 @@ A Laravel package that provides a convenient facade for compiling Typst document
 
 ## Installation
 
-You can install the package via composer:
+First, add the repository to your Laravel app's `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/durableprogramming/durable-laravel-typst"
+        }
+    ]
+}
+```
+
+Then install the package via composer:
 
 ```bash
-composer require durable/laravel-typst
+composer require durableprogramming/durable-laravel-typst
 ```
 
 ## Configuration

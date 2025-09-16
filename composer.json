@@ -19,21 +19,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Durable\\LaravelTypst\\": "src/"
+            "Durableprogramming\\LaravelTypst\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Durable\\LaravelTypst\\Tests\\": "tests/"
+            "Durableprogramming\\LaravelTypst\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Durable\\LaravelTypst\\TypstServiceProvider"
+                "Durableprogramming\\LaravelTypst\\TypstServiceProvider"
             ],
             "aliases": {
-                "Typst": "Durable\\LaravelTypst\\Facades\\Typst"
+                "Typst": "Durableprogramming\\LaravelTypst\\Facades\\Typst"
             }
         }
     },
