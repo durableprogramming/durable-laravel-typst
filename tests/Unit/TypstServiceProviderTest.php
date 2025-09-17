@@ -1,10 +1,10 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Unit;
+namespace Durableprogramming\LaravelTypst\Tests\Unit;
 
-use Durable\LaravelTypst\Tests\TestCase;
-use Durable\LaravelTypst\TypstService;
-use Durable\LaravelTypst\TypstServiceProvider;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\TypstService;
+use Durableprogramming\LaravelTypst\TypstServiceProvider;
 
 class TypstServiceProviderTest extends TestCase
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Unit;
+namespace Durableprogramming\LaravelTypst\Tests\Unit;
 
-use Durable\LaravelTypst\Facades\Typst as TypstFacade;
-use Durable\LaravelTypst\Tests\TestCase;
-use Durable\LaravelTypst\TypstService;
+use Durableprogramming\LaravelTypst\Facades\Typst as TypstFacade;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\TypstService;
 use Illuminate\Support\Facades\Facade;
 
 class TypstFacadeTest extends TestCase
@@ -65,14 +65,14 @@ class TypstFacadeTest extends TestCase
 
     public function test_facade_can_call_compile_method(): void
     {
-        $this->expectException(\Durable\LaravelTypst\Exceptions\TypstCompilationException::class);
+        $this->expectException(\Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException::class);
         
         TypstFacade::compile($this->getValidTypstContent());
     }
 
     public function test_facade_can_call_compile_to_string_method(): void
     {
-        $this->expectException(\Durable\LaravelTypst\Exceptions\TypstCompilationException::class);
+        $this->expectException(\Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException::class);
         
         TypstFacade::compileToString($this->getValidTypstContent());
     }
@@ -82,7 +82,7 @@ class TypstFacadeTest extends TestCase
         $inputFile = $this->getTestWorkingDirectory() . '/test.typ';
         file_put_contents($inputFile, $this->getValidTypstContent());
 
-        $this->expectException(\Durable\LaravelTypst\Exceptions\TypstCompilationException::class);
+        $this->expectException(\Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException::class);
         
         TypstFacade::compileFile($inputFile);
     }

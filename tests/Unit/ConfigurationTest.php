@@ -1,8 +1,8 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Unit;
+namespace Durableprogramming\LaravelTypst\Tests\Unit;
 
-use Durable\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
 
 class ConfigurationTest extends TestCase
 {

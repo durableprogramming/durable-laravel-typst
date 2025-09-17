@@ -1,9 +1,9 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Unit\Exceptions;
+namespace Durableprogramming\LaravelTypst\Tests\Unit\Exceptions;
 
-use Durable\LaravelTypst\Exceptions\TypstCompilationException;
-use Durable\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
 use Exception;
 
 class TypstCompilationExceptionTest extends TestCase

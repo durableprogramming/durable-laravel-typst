@@ -1,10 +1,10 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Unit;
+namespace Durableprogramming\LaravelTypst\Tests\Unit;
 
-use Durable\LaravelTypst\Exceptions\TypstCompilationException;
-use Durable\LaravelTypst\Tests\TestCase;
-use Durable\LaravelTypst\TypstService;
+use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\TypstService;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 
@@ -102,7 +102,7 @@ class TypstServiceTest extends TestCase
             ->once()
             ->andReturn($mockProcess);
 
-        $outputFile = $this->service->compile($source, ['format' => 'png']);
+        $outputFile = $this->service->compile($source, [], ['format' => 'png']);
 
         $this->assertStringEndsWith('.png', $outputFile);
     }
@@ -147,7 +147,7 @@ class TypstServiceTest extends TestCase
 
         $service->expects($this->once())
             ->method('compile')
-            ->with($source, [])
+            ->with($source, [], [])
             ->willReturn($outputFile);
 
         $result = $service->compileToString($source);
@@ -199,7 +199,7 @@ class TypstServiceTest extends TestCase
             ->once()
             ->andReturn($mockProcess);
 
-        $result = $this->service->compileFile($inputFile, $outputFile);
+        $result = $this->service->compileFile($inputFile, [], $outputFile);
 
         $this->assertEquals($outputFile, $result);
     }
@@ -264,7 +264,7 @@ class TypstServiceTest extends TestCase
             }))
             ->andReturn($this->createMockProcess(true, '', ''));
 
-        $this->service->compile($source, ['root' => $rootPath]);
+        $this->service->compile($source, [], ['root' => $rootPath]);
     }
 
     public function test_compile_with_font_paths(): void
@@ -291,7 +291,7 @@ class TypstServiceTest extends TestCase
             }))
             ->andReturn($this->createMockProcess(true, '', ''));
 
-        $this->service->compile($source, ['font_paths' => $fontPaths]);
+        $this->service->compile($source, [], ['font_paths' => $fontPaths]);
     }
 
     public function test_working_directory_is_created_if_not_exists(): void

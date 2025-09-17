@@ -1,10 +1,10 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Feature;
+namespace Durableprogramming\LaravelTypst\Tests\Feature;
 
-use Durable\LaravelTypst\Exceptions\TypstCompilationException;
-use Durable\LaravelTypst\Facades\Typst;
-use Durable\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
+use Durableprogramming\LaravelTypst\Facades\Typst;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
 use Illuminate\Support\Facades\Process;
 
 class TypstIntegrationTest extends TestCase
@@ -49,7 +49,7 @@ class TypstIntegrationTest extends TestCase
         
         $this->mockSuccessfulTypstProcess();
         
-        $result = Typst::compileFile($inputFile, $outputFile);
+        $result = Typst::compileFile($inputFile, [], $outputFile);
         
         $this->assertEquals($outputFile, $result);
         $this->assertFileExists($outputFile);
@@ -81,7 +81,7 @@ class TypstIntegrationTest extends TestCase
             }))
             ->andReturn($this->createMockSuccessfulProcess());
         
-        $outputFile = Typst::compile($source, [
+        $outputFile = Typst::compile($source, [], [
             'root' => $rootPath,
             'font_paths' => $fontPaths,
             'format' => 'png'
@@ -119,7 +119,7 @@ class TypstIntegrationTest extends TestCase
         $this->mockMultipleSuccessfulProcesses(count($formats));
         
         foreach ($formats as $format) {
-            $outputFile = Typst::compile($source, ['format' => $format]);
+            $outputFile = Typst::compile($source, [], ['format' => $format]);
             $this->assertStringEndsWith('.' . $format, $outputFile);
             $this->assertFileExists($outputFile);
         }
@@ -178,7 +178,7 @@ class TypstIntegrationTest extends TestCase
         $workingDir = $this->getTestWorkingDirectory();
         
         // Create a service to test
-        $service = new \Durable\LaravelTypst\TypstService(['working_directory' => $workingDir]);
+        $service = new \Durableprogramming\LaravelTypst\TypstService(['working_directory' => $workingDir]);
         
         // Use reflection to access protected methods
         $reflection = new \ReflectionClass($service);
@@ -235,7 +235,7 @@ class TypstIntegrationTest extends TestCase
             ->once()
             ->andReturnUsing(function ($command) {
                 // Extract the output file from the command and create it
-                $outputFile = end($command);
+                $outputFile = $command[3]; // outputFile is the 4th argument
                 file_put_contents($outputFile, 'Mock compilation successful');
                 return $this->createMockSuccessfulProcess();
             });
@@ -275,7 +275,7 @@ class TypstIntegrationTest extends TestCase
             ->once()
             ->andReturnUsing(function ($command) {
                 // Extract the output file from the command
-                $outputFile = end($command);
+                $outputFile = $command[3]; // outputFile is the 4th argument
                 
                 // Create the expected output file
                 file_put_contents($outputFile, 'Mock compilation successful');
@@ -317,7 +317,7 @@ class TypstIntegrationTest extends TestCase
             ->times($count)
             ->andReturnUsing(function ($command) {
                 // Extract the output file from the command
-                $outputFile = end($command);
+                $outputFile = $command[3]; // outputFile is the 4th argument
                 
                 // Create the expected output file
                 file_put_contents($outputFile, 'Mock compilation successful');

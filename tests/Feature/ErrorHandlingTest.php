@@ -1,10 +1,10 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests\Feature;
+namespace Durableprogramming\LaravelTypst\Tests\Feature;
 
-use Durable\LaravelTypst\Exceptions\TypstCompilationException;
-use Durable\LaravelTypst\Facades\Typst;
-use Durable\LaravelTypst\Tests\TestCase;
+use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
+use Durableprogramming\LaravelTypst\Facades\Typst;
+use Durableprogramming\LaravelTypst\Tests\TestCase;
 use Illuminate\Support\Facades\Process;
 
 class ErrorHandlingTest extends TestCase
@@ -13,7 +13,7 @@ class ErrorHandlingTest extends TestCase
     {
         Typst::setConfig(['bin_path' => 'nonexistent-typst-binary']);
 
-        $this->expectException(\Durable\LaravelTypst\Exceptions\TypstCompilationException::class);
+        $this->expectException(\Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException::class);
 
         Typst::compile($this->getValidTypstContent());
     }
@@ -161,7 +161,7 @@ class ErrorHandlingTest extends TestCase
                 $this->expectException(TypstCompilationException::class);
                 $this->expectExceptionMessage('Cannot write to output file');
 
-                Typst::compileFile($inputFile, $outputFile);
+                Typst::compileFile($inputFile, [], $outputFile);
             } finally {
                 chmod($readOnlyDir, 0755);
             }
@@ -174,7 +174,7 @@ class ErrorHandlingTest extends TestCase
     {
         $source = $this->getValidTypstContent();
 
-        $service = $this->getMockBuilder(\Durable\LaravelTypst\TypstService::class)
+        $service = $this->getMockBuilder(\Durableprogramming\LaravelTypst\TypstService::class)
             ->setConstructorArgs([['working_directory' => $this->getTestWorkingDirectory()]])
             ->onlyMethods(['createTempFile'])
             ->getMock();
@@ -309,7 +309,7 @@ class ErrorHandlingTest extends TestCase
         $this->assertFileExists($testTempFile);
         
         // Create a service and test the cleanup method directly
-        $service = new \Durable\LaravelTypst\TypstService(['working_directory' => $workingDir]);
+        $service = new \Durableprogramming\LaravelTypst\TypstService(['working_directory' => $workingDir]);
         
         // Use reflection to test the cleanup method
         $reflection = new \ReflectionClass($service);

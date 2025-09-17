@@ -1,8 +1,8 @@
 <?php
 
-namespace Durable\LaravelTypst\Tests;
+namespace Durableprogramming\LaravelTypst\Tests;
 
-use Durable\LaravelTypst\TypstServiceProvider;
+use Durableprogramming\LaravelTypst\TypstServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -31,7 +31,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageAliases($app): array
     {
         return [
-            'Typst' => \Durable\LaravelTypst\Facades\Typst::class,
+            'Typst' => \Durableprogramming\LaravelTypst\Facades\Typst::class,
         ];
     }
 
