@@ -5,7 +5,6 @@ namespace Durableprogramming\LaravelTypst\Tests\Unit;
 use Durableprogramming\LaravelTypst\Exceptions\TypstCompilationException;
 use Durableprogramming\LaravelTypst\Tests\TestCase;
 use Durableprogramming\LaravelTypst\TypstService;
-use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
 
 class TypstServiceTest extends TestCase
@@ -25,7 +24,7 @@ class TypstServiceTest extends TestCase
 
     public function test_constructor_sets_default_config(): void
     {
-        $service = new TypstService();
+        $service = new TypstService;
         $config = $service->getConfig();
 
         $this->assertEquals('typst', $config['bin_path']);
@@ -137,7 +136,7 @@ class TypstServiceTest extends TestCase
         $source = $this->getValidTypstContent();
         $expectedContent = 'Mock PDF content';
 
-        $outputFile = $this->getTestWorkingDirectory() . '/test_output.pdf';
+        $outputFile = $this->getTestWorkingDirectory().'/test_output.pdf';
         file_put_contents($outputFile, $expectedContent);
 
         $service = $this->getMockBuilder(TypstService::class)
@@ -159,7 +158,7 @@ class TypstServiceTest extends TestCase
     public function test_compile_to_string_throws_exception_if_cannot_read_file(): void
     {
         $source = $this->getValidTypstContent();
-        $nonExistentFile = $this->getTestWorkingDirectory() . '/non_existent.pdf';
+        $nonExistentFile = $this->getTestWorkingDirectory().'/non_existent.pdf';
 
         $service = $this->getMockBuilder(TypstService::class)
             ->setConstructorArgs([['working_directory' => $this->getTestWorkingDirectory()]])
@@ -178,9 +177,9 @@ class TypstServiceTest extends TestCase
 
     public function test_compile_file_with_existing_input(): void
     {
-        $inputFile = $this->getTestWorkingDirectory() . '/input.typ';
-        $outputFile = $this->getTestWorkingDirectory() . '/output.pdf';
-        
+        $inputFile = $this->getTestWorkingDirectory().'/input.typ';
+        $outputFile = $this->getTestWorkingDirectory().'/output.pdf';
+
         file_put_contents($inputFile, $this->getValidTypstContent());
 
         $mockProcess = $this->createMockProcess(true, '', '');
@@ -206,8 +205,8 @@ class TypstServiceTest extends TestCase
 
     public function test_compile_file_throws_exception_if_input_not_exists(): void
     {
-        $inputFile = $this->getTestWorkingDirectory() . '/non_existent.typ';
-        
+        $inputFile = $this->getTestWorkingDirectory().'/non_existent.typ';
+
         $this->expectException(TypstCompilationException::class);
         $this->expectExceptionMessage("Input file does not exist: {$inputFile}");
 
@@ -216,7 +215,7 @@ class TypstServiceTest extends TestCase
 
     public function test_compile_file_generates_output_path_if_not_provided(): void
     {
-        $inputFile = $this->getTestWorkingDirectory() . '/input.typ';
+        $inputFile = $this->getTestWorkingDirectory().'/input.typ';
         file_put_contents($inputFile, $this->getValidTypstContent());
 
         $mockProcess = $this->createMockProcess(true, '', '');
@@ -237,7 +236,7 @@ class TypstServiceTest extends TestCase
 
         $result = $this->service->compileFile($inputFile);
 
-        $expectedOutput = $this->getTestWorkingDirectory() . '/input.pdf';
+        $expectedOutput = $this->getTestWorkingDirectory().'/input.pdf';
         $this->assertEquals($expectedOutput, $result);
     }
 
@@ -259,7 +258,7 @@ class TypstServiceTest extends TestCase
         Process::shouldReceive('run')
             ->once()
             ->with(\Mockery::on(function ($command) use ($rootPath) {
-                return in_array('--root', $command) && 
+                return in_array('--root', $command) &&
                        in_array($rootPath, $command);
             }))
             ->andReturn($this->createMockProcess(true, '', ''));
@@ -284,8 +283,9 @@ class TypstServiceTest extends TestCase
 
         Process::shouldReceive('run')
             ->once()
-            ->with(\Mockery::on(function ($command) use ($fontPaths) {
+            ->with(\Mockery::on(function ($command) {
                 $commandStr = implode(' ', $command);
+
                 return strpos($commandStr, '--font-path /fonts/path1') !== false &&
                        strpos($commandStr, '--font-path /fonts/path2') !== false;
             }))
@@ -296,7 +296,7 @@ class TypstServiceTest extends TestCase
 
     public function test_working_directory_is_created_if_not_exists(): void
     {
-        $nonExistentDir = $this->getTestWorkingDirectory() . '/nested/path';
+        $nonExistentDir = $this->getTestWorkingDirectory().'/nested/path';
         $this->assertDirectoryDoesNotExist($nonExistentDir);
 
         new TypstService(['working_directory' => $nonExistentDir]);
@@ -310,10 +310,10 @@ class TypstServiceTest extends TestCase
             $this->markTestSkipped('Cannot test permission failures on Windows');
         }
 
-        $readOnlyDir = $this->getTestWorkingDirectory() . '/readonly';
+        $readOnlyDir = $this->getTestWorkingDirectory().'/readonly';
         mkdir($readOnlyDir, 0444);
-        
-        $invalidPath = $readOnlyDir . '/nested';
+
+        $invalidPath = $readOnlyDir.'/nested';
 
         try {
             $this->expectException(TypstCompilationException::class);
@@ -327,7 +327,8 @@ class TypstServiceTest extends TestCase
 
     private function createMockProcess(bool $successful, string $output = '', string $errorOutput = ''): object
     {
-        return new class($successful, $output, $errorOutput) {
+        return new class($successful, $output, $errorOutput)
+        {
             public function __construct(
                 private bool $successful,
                 private string $output,

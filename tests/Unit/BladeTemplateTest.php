@@ -29,7 +29,7 @@ This is a test document for {{ $company }}.';
 
         $data = [
             'name' => 'John Doe',
-            'company' => 'Acme Corp'
+            'company' => 'Acme Corp',
         ];
 
         $mockProcess = $this->createMockProcess(true, '', '');
@@ -69,7 +69,7 @@ This section is conditionally shown.
 
         $data = [
             'showSection' => true,
-            'items' => ['Item 1', 'Item 2', 'Item 3']
+            'items' => ['Item 1', 'Item 2', 'Item 3'],
         ];
 
         $mockProcess = $this->createMockProcess(true, '', '');
@@ -156,7 +156,7 @@ Regular content here.';
 
     public function test_compile_file_with_blade_template(): void
     {
-        $inputFile = $this->getTestWorkingDirectory() . '/template.typ';
+        $inputFile = $this->getTestWorkingDirectory().'/template.typ';
         $template = '= Invoice for {{ $customerName }}
 
 Date: {{ $date }}
@@ -174,7 +174,7 @@ Status: PENDING
             'customerName' => 'John Smith',
             'date' => '2024-01-15',
             'amount' => 1250.75,
-            'isPaid' => false
+            'isPaid' => false,
         ];
 
         $mockProcess = $this->createMockProcess(true, '', '');
@@ -214,7 +214,8 @@ Status: PENDING
 
     private function createMockProcess(bool $successful, string $output = '', string $errorOutput = ''): object
     {
-        return new class($successful, $output, $errorOutput) {
+        return new class($successful, $output, $errorOutput)
+        {
             public function __construct(
                 private bool $successful,
                 private string $output,

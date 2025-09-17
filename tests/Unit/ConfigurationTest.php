@@ -46,10 +46,10 @@ class ConfigurationTest extends TestCase
         $this->assertEquals('/env/root', getenv('TYPST_ROOT'));
 
         // Create a mock env function to test the config file behavior
-        $mockEnv = function($key, $default = null) {
+        $mockEnv = function ($key, $default = null) {
             return getenv($key) ?: $default;
         };
-        
+
         // Test the config values directly
         $binPath = $mockEnv('TYPST_BIN_PATH', 'typst');
         $timeout = $mockEnv('TYPST_TIMEOUT', 60);
@@ -78,16 +78,16 @@ class ConfigurationTest extends TestCase
     public function test_working_directory_from_environment(): void
     {
         $customWorkingDir = '/tmp/custom-typst';
-        
+
         putenv("TYPST_WORKING_DIR={$customWorkingDir}");
 
         // Load fresh config from the file
-        $configArray = include(__DIR__ . '/../../config/typst.php');
-        
+        $configArray = include __DIR__.'/../../config/typst.php';
+
         $this->assertEquals($customWorkingDir, $configArray['working_directory']);
-        
+
         // Clean up
-        putenv("TYPST_WORKING_DIR=");
+        putenv('TYPST_WORKING_DIR=');
     }
 
     public function test_all_configuration_keys_exist(): void
@@ -99,7 +99,7 @@ class ConfigurationTest extends TestCase
             'timeout',
             'format',
             'font_paths',
-            'root'
+            'root',
         ];
 
         foreach ($expectedKeys as $key) {
@@ -145,7 +145,7 @@ class ConfigurationTest extends TestCase
             '/usr/local/bin/typst',
             '/opt/typst/bin/typst',
             './typst',
-            '../bin/typst'
+            '../bin/typst',
         ];
 
         foreach ($scenarios as $path) {
@@ -156,7 +156,7 @@ class ConfigurationTest extends TestCase
 
     public function test_configuration_file_structure(): void
     {
-        $configPath = __DIR__ . '/../../config/typst.php';
+        $configPath = __DIR__.'/../../config/typst.php';
         $this->assertFileExists($configPath);
 
         $configArray = include $configPath;
@@ -164,11 +164,11 @@ class ConfigurationTest extends TestCase
 
         $expectedKeys = [
             'bin_path',
-            'working_directory', 
+            'working_directory',
             'timeout',
             'format',
             'font_paths',
-            'root'
+            'root',
         ];
 
         foreach ($expectedKeys as $key) {
@@ -190,10 +190,10 @@ class ConfigurationTest extends TestCase
         $this->assertEmpty(getenv('TYPST_ROOT'));
 
         // Create a mock env function to test the config file behavior
-        $mockEnv = function($key, $default = null) {
+        $mockEnv = function ($key, $default = null) {
             return getenv($key) ?: $default;
         };
-        
+
         // Test the config default values
         $binPath = $mockEnv('TYPST_BIN_PATH', 'typst');
         $timeout = $mockEnv('TYPST_TIMEOUT', 60);

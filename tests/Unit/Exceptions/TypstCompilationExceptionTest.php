@@ -65,7 +65,7 @@ class TypstCompilationExceptionTest extends TestCase
     public function test_exception_with_zero_exit_code(): void
     {
         $exception = new TypstCompilationException('Test', 0);
-        
+
         $this->assertEquals(0, $exception->getExitCode());
         $this->assertEquals(0, $exception->getCode());
     }
@@ -74,7 +74,7 @@ class TypstCompilationExceptionTest extends TestCase
     {
         $exitCode = -1;
         $exception = new TypstCompilationException('Test', $exitCode);
-        
+
         $this->assertEquals($exitCode, $exception->getExitCode());
         $this->assertEquals($exitCode, $exception->getCode());
     }
@@ -83,15 +83,15 @@ class TypstCompilationExceptionTest extends TestCase
     {
         $exitCode = 255;
         $exception = new TypstCompilationException('Test', $exitCode);
-        
+
         $this->assertEquals($exitCode, $exception->getExitCode());
         $this->assertEquals($exitCode, $exception->getCode());
     }
 
     public function test_exception_default_values(): void
     {
-        $exception = new TypstCompilationException();
-        
+        $exception = new TypstCompilationException;
+
         $this->assertEquals('', $exception->getMessage());
         $this->assertEquals(0, $exception->getCode());
         $this->assertEquals(0, $exception->getExitCode());

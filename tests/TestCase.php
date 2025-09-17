@@ -10,7 +10,7 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->setUpTestEnvironment();
         $this->createTestDirectories();
     }
@@ -52,19 +52,19 @@ abstract class TestCase extends Orchestra
 
     protected function getTestWorkingDirectory(): string
     {
-        return __DIR__ . '/temp';
+        return __DIR__.'/temp';
     }
 
     protected function setUpTestEnvironment(): void
     {
-        putenv('TYPST_BIN_PATH=' . $this->getTestTypstPath());
-        putenv('TYPST_WORKING_DIR=' . $this->getTestWorkingDirectory());
+        putenv('TYPST_BIN_PATH='.$this->getTestTypstPath());
+        putenv('TYPST_WORKING_DIR='.$this->getTestWorkingDirectory());
     }
 
     protected function createTestDirectories(): void
     {
         $workingDir = $this->getTestWorkingDirectory();
-        if (!is_dir($workingDir)) {
+        if (! is_dir($workingDir)) {
             mkdir($workingDir, 0755, true);
         }
     }
@@ -79,13 +79,13 @@ abstract class TestCase extends Orchestra
 
     protected function recursiveRemoveDirectory(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return;
         }
 
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
-            $path = $dir . '/' . $file;
+            $path = $dir.'/'.$file;
             is_dir($path) ? $this->recursiveRemoveDirectory($path) : unlink($path);
         }
         rmdir($dir);
@@ -107,10 +107,10 @@ fi
 echo "Unknown command" >&2
 exit 1';
 
-        $mockPath = $this->getTestWorkingDirectory() . '/mock-typst';
+        $mockPath = $this->getTestWorkingDirectory().'/mock-typst';
         file_put_contents($mockPath, $mockScript);
         chmod($mockPath, 0755);
-        
+
         return $mockPath;
     }
 

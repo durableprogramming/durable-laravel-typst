@@ -35,9 +35,9 @@ class ErrorHandlingTest extends TestCase
         $mockProcess = \Mockery::mock(\Symfony\Component\Process\Process::class);
         $mockProcess->shouldReceive('getCommandLine')->andReturn('mock command');
         $mockProcess->shouldReceive('getTimeout')->andReturn(1);
-        
+
         $mockResult = \Mockery::mock(\Illuminate\Contracts\Process\ProcessResult::class);
-        
+
         Process::shouldReceive('run')
             ->once()
             ->andThrow(new \Illuminate\Process\Exceptions\ProcessTimedOutException(
@@ -60,10 +60,10 @@ class ErrorHandlingTest extends TestCase
         }
 
         // Create a read-only directory to simulate permission failure
-        $readOnlyDir = $this->getTestWorkingDirectory() . '/readonly';
+        $readOnlyDir = $this->getTestWorkingDirectory().'/readonly';
         mkdir($readOnlyDir, 0444);
-        
-        $forbiddenPath = $readOnlyDir . '/forbidden';
+
+        $forbiddenPath = $readOnlyDir.'/forbidden';
 
         try {
             $this->expectException(TypstCompilationException::class);
@@ -135,13 +135,13 @@ class ErrorHandlingTest extends TestCase
 
     public function test_handles_output_file_write_errors(): void
     {
-        $inputFile = $this->getTestWorkingDirectory() . '/input.typ';
+        $inputFile = $this->getTestWorkingDirectory().'/input.typ';
         file_put_contents($inputFile, $this->getValidTypstContent());
 
         if (PHP_OS_FAMILY !== 'Windows') {
-            $readOnlyDir = $this->getTestWorkingDirectory() . '/readonly';
+            $readOnlyDir = $this->getTestWorkingDirectory().'/readonly';
             mkdir($readOnlyDir, 0444);
-            $outputFile = $readOnlyDir . '/output.pdf';
+            $outputFile = $readOnlyDir.'/output.pdf';
 
             Process::shouldReceive('timeout')
                 ->once()
@@ -302,30 +302,31 @@ class ErrorHandlingTest extends TestCase
 
         // Create a temp file manually to simulate what happens in compilation
         $workingDir = $this->getTestWorkingDirectory();
-        $testTempFile = tempnam($workingDir, 'typst_') . '.typ';
+        $testTempFile = tempnam($workingDir, 'typst_').'.typ';
         file_put_contents($testTempFile, $source);
-        
+
         // Verify the temp file exists
         $this->assertFileExists($testTempFile);
-        
+
         // Create a service and test the cleanup method directly
         $service = new \Durableprogramming\LaravelTypst\TypstService(['working_directory' => $workingDir]);
-        
+
         // Use reflection to test the cleanup method
         $reflection = new \ReflectionClass($service);
         $cleanupMethod = $reflection->getMethod('cleanupTempFile');
         $cleanupMethod->setAccessible(true);
-        
+
         // Call cleanup method
         $cleanupMethod->invoke($service, $testTempFile);
-        
+
         // Verify file was cleaned up
         $this->assertFileDoesNotExist($testTempFile);
     }
 
     private function createFailedProcess(string $errorMessage, int $exitCode = 1): object
     {
-        return new class($errorMessage, $exitCode) {
+        return new class($errorMessage, $exitCode)
+        {
             public function __construct(
                 private string $errorMessage,
                 private int $exitCode

@@ -53,15 +53,15 @@ class TypstServiceProviderTest extends TestCase
     public function test_config_is_published(): void
     {
         $provider = new TypstServiceProvider($this->app);
-        
+
         $this->artisan('vendor:publish', [
             '--tag' => 'typst-config',
-            '--force' => true
+            '--force' => true,
         ]);
 
         $configPath = config_path('typst.php');
         $this->assertFileExists($configPath);
-        
+
         $config = require $configPath;
         $this->assertIsArray($config);
         $this->assertArrayHasKey('bin_path', $config);
@@ -73,7 +73,7 @@ class TypstServiceProviderTest extends TestCase
     public function test_service_provider_is_deferred(): void
     {
         $provider = new TypstServiceProvider($this->app);
-        
+
         $this->assertNotEmpty($provider->provides());
     }
 
@@ -83,7 +83,7 @@ class TypstServiceProviderTest extends TestCase
         if (file_exists($configPath)) {
             unlink($configPath);
         }
-        
+
         parent::tearDown();
     }
 }
