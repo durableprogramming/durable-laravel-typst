@@ -8,7 +8,7 @@ class TypstCompilationException extends Exception
 {
     protected int $exitCode;
 
-    public function __construct(string $message = '', int $exitCode = 0, ?Exception $previous = null)
+    public function __construct(string $message = '', int $exitCode = 0, ?\Throwable $previous = null)
     {
         $this->exitCode = $exitCode;
         parent::__construct($message, $exitCode, $previous);

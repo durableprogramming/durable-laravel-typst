@@ -50,6 +50,10 @@
     # Add any background processes if needed
   };
 
+  enterTest = ''
+    vendor/bin/phpunit
+  '';
+
   env = {
     TYPST_BIN_PATH = "typst";
     TYPST_TIMEOUT = "30";

@@ -10,7 +10,7 @@ class ConfigurationTest extends TestCase
     {
         $config = config('typst');
 
-        $this->assertEquals('mock-typst', $config['bin_path']);
+        $this->assertEquals($this->getTestTypstPath(), $config['bin_path']);
         $this->assertEquals($this->getTestWorkingDirectory(), $config['working_directory']);
         $this->assertEquals(30, $config['timeout']);
         $this->assertEquals('pdf', $config['format']);

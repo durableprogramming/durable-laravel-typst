@@ -47,7 +47,7 @@ abstract class TestCase extends Orchestra
 
     protected function getTestTypstPath(): string
     {
-        return 'mock-typst';
+        return $this->getTestWorkingDirectory().'/mock-typst';
     }
 
     protected function getTestWorkingDirectory(): string

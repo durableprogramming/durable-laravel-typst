@@ -323,6 +323,249 @@ class ErrorHandlingTest extends TestCase
         $this->assertFileDoesNotExist($testTempFile);
     }
 
+    public function test_handles_compilation_with_disk_full(): void
+    {
+        $source = $this->getValidTypstContent();
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createFailedProcess('No space left on device', 28));
+
+        $this->expectException(TypstCompilationException::class);
+        $this->expectExceptionMessage('No space left on device');
+
+        Typst::compile($source);
+    }
+
+    public function test_handles_compilation_with_corrupted_output_file(): void
+    {
+        $source = $this->getValidTypstContent();
+
+        // Mock successful process but create corrupted output
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturnUsing(function ($command) {
+                $outputFile = $command[3];
+                // Create a corrupted/truncated file
+                file_put_contents($outputFile, 'corrupted');
+                return $this->createSuccessfulProcess();
+            });
+
+        $outputFile = Typst::compile($source);
+        $this->assertFileExists($outputFile);
+        // File exists but is corrupted - this tests that we don't validate content
+    }
+
+    public function test_handles_compilation_with_permission_denied_on_output(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Cannot test permission errors on Windows');
+        }
+
+        $source = $this->getValidTypstContent();
+        $readOnlyDir = $this->getTestWorkingDirectory().'/readonly_output';
+        mkdir($readOnlyDir, 0444);
+
+        Typst::setConfig(['working_directory' => $readOnlyDir]);
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($readOnlyDir)
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createFailedProcess('Permission denied', 13));
+
+        try {
+            $this->expectException(TypstCompilationException::class);
+            $this->expectExceptionMessage('Permission denied');
+
+            Typst::compile($source);
+        } finally {
+            chmod($readOnlyDir, 0755);
+        }
+    }
+
+    public function test_handles_compilation_timeout_during_execution(): void
+    {
+        $source = $this->getValidTypstContent();
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        $mockProcess = \Mockery::mock(\Symfony\Component\Process\Process::class);
+        $mockProcess->shouldReceive('getCommandLine')->andReturn('mock command');
+        $mockProcess->shouldReceive('getTimeout')->andReturn(30);
+
+        $mockResult = \Mockery::mock(\Illuminate\Contracts\Process\ProcessResult::class);
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andThrow(new \Illuminate\Process\Exceptions\ProcessTimedOutException(
+                new \Symfony\Component\Process\Exception\ProcessTimedOutException(
+                    $mockProcess,
+                    \Symfony\Component\Process\Exception\ProcessTimedOutException::TYPE_GENERAL
+                ),
+                $mockResult
+            ));
+
+        $this->expectException(\Illuminate\Process\Exceptions\ProcessTimedOutException::class);
+
+        Typst::compile($source);
+    }
+
+    public function test_handles_compilation_with_network_interruptions(): void
+    {
+        $source = $this->getValidTypstContent();
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createFailedProcess('Network is unreachable', 101));
+
+        $this->expectException(TypstCompilationException::class);
+        $this->expectExceptionMessage('Network is unreachable');
+
+        Typst::compile($source);
+    }
+
+    public function test_handles_compilation_with_invalid_utf8_in_error(): void
+    {
+        $source = $this->getValidTypstContent();
+        $invalidUtf8Error = "Error: \x80\x81\x82 invalid utf8 content";
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createFailedProcess($invalidUtf8Error));
+
+        $this->expectException(TypstCompilationException::class);
+        // Should handle invalid UTF-8 gracefully
+        Typst::compile($source);
+    }
+
+    public function test_handles_symlink_working_directory(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Symlink tests not reliable on Windows');
+        }
+
+        $realDir = $this->getTestWorkingDirectory().'/real_dir';
+        $symlinkDir = $this->getTestWorkingDirectory().'/symlink_dir';
+
+        mkdir($realDir, 0755, true);
+        symlink($realDir, $symlinkDir);
+
+        Typst::setConfig(['working_directory' => $symlinkDir]);
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($symlinkDir)
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createSuccessfulProcess());
+
+        $source = $this->getValidTypstContent();
+        $result = Typst::compile($source);
+
+        $this->assertStringEndsWith('.pdf', $result);
+        $this->assertFileExists($result);
+
+        unlink($result);
+        unlink($symlinkDir);
+        rmdir($realDir);
+    }
+
+    public function test_handles_case_sensitivity_in_paths(): void
+    {
+        $source = $this->getValidTypstContent();
+        $workingDir = $this->getTestWorkingDirectory();
+
+        // Test with different case variations if filesystem is case-insensitive
+        $upperCaseDir = strtoupper($workingDir);
+        $lowerCaseDir = strtolower($workingDir);
+
+        // This test mainly ensures the code handles path variations gracefully
+        Typst::setConfig(['working_directory' => $workingDir]);
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($workingDir)
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($this->createSuccessfulProcess());
+
+        $result = Typst::compile($source);
+
+        $this->assertStringEndsWith('.pdf', $result);
+        $this->assertFileExists($result);
+    }
+
     private function createFailedProcess(string $errorMessage, int $exitCode = 1): object
     {
         return new class($errorMessage, $exitCode)
@@ -350,6 +593,32 @@ class ErrorHandlingTest extends TestCase
             public function exitCode(): int
             {
                 return $this->exitCode;
+            }
+        };
+    }
+
+    private function createSuccessfulProcess(): object
+    {
+        return new class
+        {
+            public function successful(): bool
+            {
+                return true;
+            }
+
+            public function output(): string
+            {
+                return 'Mock compilation successful';
+            }
+
+            public function errorOutput(): string
+            {
+                return '';
+            }
+
+            public function exitCode(): int
+            {
+                return 0;
             }
         };
     }

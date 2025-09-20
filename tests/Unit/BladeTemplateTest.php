@@ -212,6 +212,243 @@ Status: PENDING
         $this->service->compile($template, $data);
     }
 
+    public function test_compile_with_nested_blade_directives(): void
+    {
+        $template = '= Document
+@if($showOuter)
+== Outer Section
+@if($showInner)
+=== Inner Section
+This is deeply nested content.
+@endif
+@foreach($items as $item)
+- {{ $item }}
+@if($item === "special")
+**Special item found!**
+@endif
+@endforeach
+@endif';
+
+        $data = [
+            'showOuter' => true,
+            'showInner' => true,
+            'items' => ['normal', 'special', 'normal']
+        ];
+
+        $mockProcess = $this->createMockProcess(true, '', '');
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($mockProcess);
+
+        $outputFile = $this->service->compile($template, $data);
+        $this->assertStringEndsWith('.pdf', $outputFile);
+    }
+
+    public function test_compile_with_blade_loops_and_conditionals(): void
+    {
+        $template = '= User Report
+@forelse($users as $user)
+== {{ $user["name"] }}
+Age: {{ $user["age"] }}
+@if($user["active"])
+Status: Active
+@else
+Status: Inactive
+@endif
+@empty
+No users found.
+@endforelse
+
+Total users: {{ count($users) }}';
+
+        $data = [
+            'users' => [
+                ['name' => 'John', 'age' => 30, 'active' => true],
+                ['name' => 'Jane', 'age' => 25, 'active' => false],
+            ]
+        ];
+
+        $mockProcess = $this->createMockProcess(true, '', '');
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($mockProcess);
+
+        $outputFile = $this->service->compile($template, $data);
+        $this->assertStringEndsWith('.pdf', $outputFile);
+    }
+
+    public function test_compile_with_blade_expressions_and_operators(): void
+    {
+        $template = '= Calculations
+@if($a > 10 && $b < 20)
+A is greater than 10 AND B is less than 20
+@elseif($a === 5 || $b !== 15)
+A equals 5 OR B does not equal 15
+@else
+Neither condition met
+@endif
+
+Sum: {{ $a + $b }}
+Product: {{ $a * $b }}
+Division: {{ $a / $b }}
+Modulo: {{ $a % $b }}
+
+Ternary: {{ $a > $b ? "A is larger" : "B is larger or equal" }}';
+
+        $data = [
+            'a' => 15,
+            'b' => 10
+        ];
+
+        $mockProcess = $this->createMockProcess(true, '', '');
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($mockProcess);
+
+        $outputFile = $this->service->compile($template, $data);
+        $this->assertStringEndsWith('.pdf', $outputFile);
+    }
+
+    public function test_compile_with_blade_error_handling_in_loops(): void
+    {
+        $template = '= Safe Loop
+@foreach($items ?? [] as $item)
+- {{ $item["name"] ?? "Unknown" }}
+@if(isset($item["value"]) && $item["value"] > 0)
+Value: {{ $item["value"] }}
+@endif
+@endforeach
+
+@if(!empty($optionalData))
+Optional data: {{ $optionalData }}
+@endif';
+
+        $data = [
+            'items' => [
+                ['name' => 'Item 1', 'value' => 10],
+                ['name' => 'Item 2'], // Missing value
+                ['value' => -5], // Missing name
+            ]
+            // optionalData is not provided
+        ];
+
+        $mockProcess = $this->createMockProcess(true, '', '');
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($mockProcess);
+
+        $outputFile = $this->service->compile($template, $data);
+        $this->assertStringEndsWith('.pdf', $outputFile);
+    }
+
+    public function test_compile_with_blade_custom_components_simulation(): void
+    {
+        // Simulate component-like behavior with includes and variables
+        $template = '= Document with Components
+
+{{-- Header Component --}}
+#set text(size: 18pt, weight: "bold")
+{{ $headerTitle }}
+#set text(size: 12pt, weight: "regular")
+
+{{-- Content Section --}}
+@foreach($sections as $section)
+== {{ $section["title"] }}
+{{ $section["content"] }}
+
+@if($section["hasCode"])
+```
+{{ $section["code"] }}
+```
+@endif
+@endforeach
+
+{{-- Footer --}}
+#set text(size: 10pt, style: "italic")
+Generated on {{ $date }}';
+
+        $data = [
+            'headerTitle' => 'Technical Documentation',
+            'sections' => [
+                [
+                    'title' => 'Introduction',
+                    'content' => 'This is an introduction.',
+                    'hasCode' => false
+                ],
+                [
+                    'title' => 'Code Example',
+                    'content' => 'Here is some code:',
+                    'hasCode' => true,
+                    'code' => 'function hello() { return "world"; }'
+                ]
+            ],
+            'date' => '2024-01-15'
+        ];
+
+        $mockProcess = $this->createMockProcess(true, '', '');
+
+        Process::shouldReceive('timeout')
+            ->once()
+            ->with(30)
+            ->andReturnSelf();
+
+        Process::shouldReceive('path')
+            ->once()
+            ->with($this->getTestWorkingDirectory())
+            ->andReturnSelf();
+
+        Process::shouldReceive('run')
+            ->once()
+            ->andReturn($mockProcess);
+
+        $outputFile = $this->service->compile($template, $data);
+        $this->assertStringEndsWith('.pdf', $outputFile);
+    }
+
     private function createMockProcess(bool $successful, string $output = '', string $errorOutput = ''): object
     {
         return new class($successful, $output, $errorOutput)

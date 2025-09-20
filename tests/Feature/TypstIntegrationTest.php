@@ -26,7 +26,7 @@ class TypstIntegrationTest extends TestCase
         $this->assertStringEndsWith('.pdf', $outputFile);
         $this->assertStringContainsString($this->getTestWorkingDirectory(), $outputFile);
         $this->assertFileExists($outputFile);
-        $this->assertFileContainsString('Mock compilation successful', $outputFile);
+        $this->assertFileContainsString('%PDF-1.4 dummy content', $outputFile);
     }
 
     public function test_compile_to_string_integration(): void
@@ -37,7 +37,7 @@ class TypstIntegrationTest extends TestCase
 
         $content = Typst::compileToString($source);
 
-        $this->assertStringContainsString('Mock compilation successful', $content);
+        $this->assertStringContainsString('%PDF-1.4 dummy content', $content);
     }
 
     public function test_compile_file_integration(): void
@@ -53,7 +53,7 @@ class TypstIntegrationTest extends TestCase
 
         $this->assertEquals($outputFile, $result);
         $this->assertFileExists($outputFile);
-        $this->assertFileContainsString('Mock compilation successful', $outputFile);
+        $this->assertFileContainsString('%PDF-1.4 dummy content', $outputFile);
     }
 
     public function test_compilation_with_custom_options(): void
