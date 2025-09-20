@@ -24,6 +24,7 @@ class TypstService
             'timeout' => 60,
             'format' => 'pdf',
             'root' => base_path(),
+            'debug' => false,
         ], $config ?? []);
 
         // Validate and set binPath
@@ -43,6 +44,11 @@ class TypstService
             @mkdir($this->workingDirectory, 0755, true);
         }
 
+        // Create debug directory if debug mode is enabled
+        if ($this->config['debug']) {
+            $this->ensureDebugDirectory();
+        }
+
         // Validate timeout
         if (!is_int($this->config['timeout']) || $this->config['timeout'] < 0) {
             $this->config['timeout'] = 60;
@@ -51,6 +57,11 @@ class TypstService
         // Validate format
         if (!is_string($this->config['format']) || empty($this->config['format']) || preg_match('/[;&|`]/', $this->config['format'])) {
             $this->config['format'] = 'pdf';
+        }
+
+        // Validate debug option
+        if (!is_bool($this->config['debug'])) {
+            $this->config['debug'] = false;
         }
     }
 
@@ -138,7 +149,7 @@ class TypstService
 
         $processedContent = $this->renderBladeTemplate($fileContent, $data);
         $tempFile = $this->createTempFile($processedContent);
-        $outputPath = $outputPath ?? $this->getOutputPath($inputPath, $options['format'] ?? $this->config['format']);
+        $outputPath = $outputPath ?? $this->getWorkingDirectoryOutputPath($inputPath, $options['format'] ?? $this->config['format']);
 
         try {
             $result = $this->executeTypst($tempFile, $outputPath, $options);
@@ -186,11 +197,6 @@ class TypstService
             ->path($this->workingDirectory)
             ->run($command);
 
-        // For testing purposes, create a dummy output file if successful
-        if ($result->successful()) {
-            file_put_contents($outputFile, '%PDF-1.4 dummy content');
-        }
-
         return $result;
     }
 
@@ -218,6 +224,14 @@ class TypstService
         return $pathInfo['dirname'].'/'.$pathInfo['filename'].'.'.$format;
     }
 
+    protected function getWorkingDirectoryOutputPath(string $inputFile, string $format): string
+    {
+        $pathInfo = pathinfo($inputFile);
+        $uniqueId = uniqid();
+        
+        return $this->workingDirectory.'/'.$pathInfo['filename'].'_'.$uniqueId.'.'.$format;
+    }
+
     protected function ensureWorkingDirectory(): void
     {
         if (! is_dir($this->workingDirectory)) {
@@ -231,9 +245,52 @@ class TypstService
         }
     }
 
+    protected function ensureDebugDirectory(): void
+    {
+        $debugDir = $this->getDebugDirectory();
+        if (! is_dir($debugDir)) {
+            try {
+                if (! mkdir($debugDir, 0755, true)) {
+                    throw new TypstCompilationException("Failed to create debug directory: {$debugDir}");
+                }
+            } catch (\ErrorException $e) {
+                throw new TypstCompilationException("Failed to create debug directory: {$debugDir}");
+            }
+        }
+    }
+
+    protected function getDebugDirectory(): string
+    {
+        return storage_path('app/typst-debug');
+    }
+
+    protected function createDebugCopy(string $filePath, string $description = ''): void
+    {
+        if (!$this->config['debug'] || !file_exists($filePath)) {
+            return;
+        }
+
+        $debugDir = $this->getDebugDirectory();
+        $timestamp = date('Y-m-d_H-i-s');
+        $filename = basename($filePath);
+        $debugFilename = $timestamp . '_' . ($description ? $description . '_' : '') . $filename;
+        $debugPath = $debugDir . '/' . $debugFilename;
+
+        copy($filePath, $debugPath);
+
+        Log::info('Debug copy created', [
+            'original' => $filePath,
+            'debug_copy' => $debugPath,
+            'description' => $description
+        ]);
+    }
+
     protected function cleanupTempFile(string $filePath): void
     {
-        if (file_exists($filePath) && strpos(basename($filePath), 'typst_') === 0) {
+        // Create debug copy before cleanup if debug mode is enabled
+        $this->createDebugCopy($filePath, 'temp_source');
+
+        if (!$this->config['debug'] && file_exists($filePath) && strpos(basename($filePath), 'typst_') === 0) {
             unlink($filePath);
         }
 
@@ -248,7 +305,12 @@ class TypstService
         if ($files) {
             foreach ($files as $file) {
                 if (file_exists($file)) {
-                    unlink($file);
+                    // Create debug copy before cleanup if debug mode is enabled
+                    $this->createDebugCopy($file, 'imported');
+                    
+                    if (!$this->config['debug']) {
+                        unlink($file);
+                    }
                 }
             }
         }
@@ -256,7 +318,10 @@ class TypstService
 
     protected function cleanupFile(string $filePath): void
     {
-        if (file_exists($filePath)) {
+        // Create debug copy before cleanup if debug mode is enabled
+        $this->createDebugCopy($filePath, 'output');
+
+        if (!$this->config['debug'] && file_exists($filePath)) {
             unlink($filePath);
         }
     }
@@ -280,6 +345,9 @@ class TypstService
         if (isset($config['root']) && is_string($config['root']) && !empty($config['root'])) {
             $validatedConfig['root'] = $config['root'];
         }
+        if (isset($config['debug']) && is_bool($config['debug'])) {
+            $validatedConfig['debug'] = $config['debug'];
+        }
 
         $this->config = array_merge($this->config, $validatedConfig);
 
@@ -291,6 +359,10 @@ class TypstService
         if (isset($validatedConfig['working_directory'])) {
             $this->workingDirectory = $validatedConfig['working_directory'];
             $this->ensureWorkingDirectory();
+        }
+
+        if (isset($validatedConfig['debug']) && $validatedConfig['debug']) {
+            $this->ensureDebugDirectory();
         }
 
         return $this;
@@ -335,6 +407,7 @@ class TypstService
             if (ob_get_level() > 0) {
                 ob_end_clean();
             }
+            Log::error('Blade template rendering failed: ' . $e->getMessage());
             throw new TypstCompilationException(
                 'Blade template rendering failed: '.$e->getMessage(),
                 0,
